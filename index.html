@@ -1,196 +1,282 @@
- <h2 style="margin-top:0; color:#10b981; text-align:center;">[ CHAINED ROUTINE PLANNER ]</h2>
-            <div class="scheduler-grid">
-                <div>
-                    <h3 style="color:#10b981;">> Project Groups</h3>
-                    <div id="allGroups"></div>
-                    <button class="scheduler-btn" onclick="addGroup()" style="width:100%; margin-top:10px;">+ NEW PROJECT</button>
-                </div>
-                <div>
-                    <h3 style="color:#a855f7;">> Quick Task Backlog</h3>
-                    <div id="backlogContainer"></div>
-                    <button class="scheduler-btn" onclick="addBacklog()" style="border-color:#a855f7; color:#a855f7; margin-top:10px; width:100%;">+ ADD QUICK TASK</button>
-                </div>
-            </div>
-            <div style="text-align: center; margin: 20px 0; padding: 15px; background: #020617; border: 1px solid #1e293b;">
-                <strong>DEADLINE:</strong> <input type="time" id="deadline" value="17:00" onchange="saveData()">
-                <button class="scheduler-btn" onclick="calculate()" style="background:#10b981; color:#020617; margin-top:10px; width:100%; max-width:300px;">RUN OPTIMIZATION</button>
-            </div>
-            <div id="output" class="output"></div>
-        </div>
-      </div>
-
-
-      
-<script>
-  function mobilePrintFix() {
-    const iframe = document.querySelector('#editorModal iframe');
-    if (iframe) {
-        // We tell the iframe to focus and trigger its internal print logic
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-    }
-}
-
-  
-  
-  /* --- OVERLAY LOGIC --- */
-      function toggleOverlay(id, show) {
-        const el = document.getElementById(id);
-        if (el) {
-          el.style.display = show ? 'block' : 'none';
-          document.body.style.overflow = show ? 'hidden' : 'auto';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chained Routine Planner</title>
+    <style>
+        :root {
+            --bg: #020617;
+            --card-bg: #0f172a;
+            --border: #1e293b;
+            --accent-green: #10b981;
+            --accent-purple: #a855f7;
+            --text: #f1f5f9;
         }
-      }
 
-      window.onclick = function(event) {
-        if (event.target.classList.contains('full-overlay')) {
-          event.target.style.display = 'none';
-          document.body.style.overflow = 'auto';
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-      }
-  function toggleOverlay(id, show) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.style.display = show ? 'block' : 'none';
-    // Prevent background scrolling when overlay is open
-    document.body.style.overflow = show ? 'hidden' : 'auto';
-  }
-}
-  
-// (Keep addGroup, addSubTask, and move functions from previous version)
-function addGroup() {
-    const id = Date.now();
-    const isFirst = document.querySelectorAll('.group-container').length === 0;
-    const div = document.createElement('div');
-    div.className = 'group-container';
-    div.innerHTML = `
-        <div class="link-style" ${isFirst ? 'style="display:none"' : ''} style="background:#fff3e0; padding:5px; margin-bottom:10px; font-size:0.8em;">
-            Link: <select class="g-link"><option value="parallel">Parallel</option><option value="sequential">After Previous</option></select>
-        </div>
-        <div style="display:flex; gap:5px; margin-bottom:10px;">
-            <button class="btn-move" onclick="move(this, 'up')">↑</button>
-            <button class="btn-move" onclick="move(this, 'down')">↓</button>
-            <input type="text" class="g-name" placeholder="Project Name" style="font-weight:bold; flex-grow:1">
-            <button class="btn-del" onclick="this.parentElement.parentElement.remove()">Remove</button>
-        </div>
-        <div id="steps-${id}"></div>
-        <button onclick="addSubTask('${id}')" style="background:#81ecec; color:black; font-size:0.8em">+ Step</button>
-    `;
-    document.getElementById('allGroups').appendChild(div);
-}
 
-function addSubTask(groupId) {
-    const container = document.getElementById(`steps-${groupId}`);
-    const div = document.createElement('div');
-    div.className = 'sub-task';
-    div.innerHTML = `<button class="btn-move" onclick="move(this, 'up')">↑</button><button class="btn-move" onclick="move(this, 'down')">↓</button><input type="text" class="s-name" placeholder="Step" style="width:100px"> <input type="number" class="s-active" value="10"> <input type="number" class="s-proc" value="30"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
-    container.appendChild(div);
-}
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
 
-function move(btn, direction) {
-    const row = btn.parentElement;
-    if (direction === 'up' && row.previousElementSibling) row.parentNode.insertBefore(row, row.previousElementSibling);
-    if (direction === 'down' && row.nextElementSibling) row.parentNode.insertBefore(row.nextElementSibling, row);
-}
+        .scheduler-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
-function addBacklog() {
-    const div = document.createElement('div');
-    div.className = 'backlog-item';
-    div.innerHTML = `
-        <button class="btn-move" onclick="move(this, 'up')">↑</button>
-        <button class="btn-move" onclick="move(this, 'down')">↓</button>
-        <input type="text" class="b-name" placeholder="Quick Task" style="width:120px"> 
-        <input type="number" class="b-time" value="5" title="Minutes"> 
-        <label style="font-size:0.7em"><input type="checkbox" class="b-chain"> Chain to Next?</label>
-        <button class="btn-del" onclick="this.parentElement.remove()">X</button>
-    `;
-    document.getElementById('backlogContainer').appendChild(div);
-}
+        @media (max-width: 600px) {
+            .scheduler-grid { grid-template-columns: 1fr; }
+        }
 
-function calculate() {
-    const masterDeadlineStr = document.getElementById('deadline').value;
-    const [h, m] = masterDeadlineStr.split(':');
-    const baseDeadline = new Date();
-    baseDeadline.setHours(h, m, 0);
+        h2, h3 { text-transform: uppercase; letter-spacing: 1px; }
 
-    // 1. Group Backlog items into "Routines" based on Chaining
-    let backlogElements = Array.from(document.querySelectorAll('.backlog-item'));
-    let routines = [];
-    let currentRoutine = [];
+        .group-container, .backlog-item {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+        }
 
-    backlogElements.forEach((el, index) => {
-        let task = {
-            name: el.querySelector('.b-name').value || "Task",
-            time: parseInt(el.querySelector('.b-time').value) || 0,
-            used: false
-        };
-        currentRoutine.push(task);
+        .sub-task {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #334155;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        input, select {
+            background: #020617;
+            border: 1px solid #475569;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .scheduler-btn {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid var(--accent-green);
+            background: transparent;
+            color: var(--accent-green);
+            font-weight: bold;
+            transition: 0.3s;
+            border-radius: 4px;
+        }
+
+        .scheduler-btn:hover {
+            background: var(--accent-green);
+            color: var(--bg);
+        }
+
+        .btn-del { color: #ef4444; border: none; background: none; cursor: pointer; font-size: 0.8em; }
+        .btn-move { background: #475569; color: white; border: none; cursor: pointer; border-radius: 3px; padding: 2px 8px; }
+
+        .output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #020617;
+            border: 1px solid var(--accent-green);
+            border-radius: 6px;
+        }
+
+        .time-mark {
+            color: var(--accent-green);
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .link-style { border-radius: 4px; color: #92400e; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 style="margin-top:0; color:#10b981; text-align:center;">[ CHAINED ROUTINE PLANNER ]</h2>
         
-        if (!el.querySelector('.b-chain').checked) {
-            routines.push({ tasks: currentRoutine, totalTime: currentRoutine.reduce((sum, t) => sum + t.time, 0), used: false });
-            currentRoutine = [];
-        } else if (index === backlogElements.length - 1) {
-            routines.push({ tasks: currentRoutine, totalTime: currentRoutine.reduce((sum, t) => sum + t.time, 0), used: false });
+        <div class="scheduler-grid">
+            <div>
+                <h3 style="color:#10b981;">> Project Groups</h3>
+                <div id="allGroups"></div>
+                <button class="scheduler-btn" onclick="addGroup()" style="width:100%; margin-top:10px;">+ NEW PROJECT</button>
+            </div>
+            <div>
+                <h3 style="color:#a855f7;">> Quick Task Backlog</h3>
+                <div id="backlogContainer"></div>
+                <button class="scheduler-btn" onclick="addBacklog()" style="border-color:#a855f7; color:#a855f7; margin-top:10px; width:100%;">+ ADD QUICK TASK</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0; padding: 15px; background: #020617; border: 1px solid #1e293b;">
+            <strong>DEADLINE:</strong> <input type="time" id="deadline" value="17:00">
+            <button class="scheduler-btn" onclick="calculate()" style="background:#10b981; color:#020617; margin-top:10px; width:100%; max-width:300px;">RUN OPTIMIZATION</button>
+        </div>
+
+        <div id="output" class="output">
+            <p style="text-align:center; color:#64748b;">Click "Run Optimization" to generate your timeline.</p>
+        </div>
+    </div>
+
+    <script>
+        function addGroup() {
+            const id = Date.now();
+            const isFirst = document.querySelectorAll('.group-container').length === 0;
+            const div = document.createElement('div');
+            div.className = 'group-container';
+            div.innerHTML = `
+                <div class="link-style" ${isFirst ? 'style="display:none"' : ''} style="background:#fff3e0; padding:5px; margin-bottom:10px; font-size:0.8em;">
+                    Link: <select class="g-link"><option value="parallel">Parallel</option><option value="sequential">After Previous</option></select>
+                </div>
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <button class="btn-move" onclick="move(this, 'up')">↑</button>
+                    <button class="btn-move" onclick="move(this, 'down')">↓</button>
+                    <input type="text" class="g-name" placeholder="Project Name" style="font-weight:bold; flex-grow:1">
+                    <button class="btn-del" onclick="this.parentElement.parentElement.remove()">Remove</button>
+                </div>
+                <div id="steps-${id}"></div>
+                <button class="scheduler-btn" onclick="addSubTask('${id}')" style="background:#81ecec; color:black; font-size:0.8em; border:none;">+ Step</button>
+            `;
+            document.getElementById('allGroups').appendChild(div);
         }
-    });
 
-    // 2. Process Projects (Backward Logic)
-    let groupElements = Array.from(document.querySelectorAll('.group-container'));
-    let groupData = groupElements.map((el, index) => ({
-        name: el.querySelector('.g-name').value || `Project ${index+1}`,
-        link: el.querySelector('.g-link')?.value || 'parallel',
-        steps: Array.from(el.querySelectorAll('.sub-task')).map(s => ({
-            name: s.querySelector('.s-name').value || "Step",
-            active: parseInt(s.querySelector('.s-active').value) || 0,
-            proc: parseInt(s.querySelector('.s-proc').value) || 0
-        })).reverse()
-    }));
+        function addSubTask(groupId) {
+            const container = document.getElementById(`steps-${groupId}`);
+            const div = document.createElement('div');
+            div.className = 'sub-task';
+            div.innerHTML = `
+                <button class="btn-move" onclick="move(this, 'up')">↑</button>
+                <button class="btn-move" onclick="move(this, 'down')">↓</button>
+                <input type="text" class="s-name" placeholder="Step" style="width:100px"> 
+                <input type="number" class="s-active" value="10" title="Active Minutes" style="width:50px"> 
+                <input type="number" class="s-proc" value="30" title="Processing Minutes" style="width:50px">
+                <button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+            container.appendChild(div);
+        }
 
-    let computedGroups = [];
-    let nextNeededStart = new Date(baseDeadline);
+        function move(btn, direction) {
+            const row = btn.parentElement;
+            if (direction === 'up' && row.previousElementSibling) row.parentNode.insertBefore(row, row.previousElementSibling);
+            if (direction === 'down' && row.nextElementSibling) row.parentNode.insertBefore(row.nextElementSibling, row);
+        }
 
-    for (let i = groupData.length - 1; i >= 0; i--) {
-        let group = groupData[i];
-        let deadlineForThisGroup = (i < groupData.length - 1 && groupData[i+1].link === 'sequential') ? new Date(nextNeededStart) : new Date(baseDeadline);
+        function addBacklog() {
+            const div = document.createElement('div');
+            div.className = 'backlog-item';
+            div.innerHTML = `
+                <button class="btn-move" onclick="move(this, 'up')">↑</button>
+                <button class="btn-move" onclick="move(this, 'down')">↓</button>
+                <input type="text" class="b-name" placeholder="Quick Task" style="width:120px"> 
+                <input type="number" class="b-time" value="5" title="Minutes" style="width:50px"> 
+                <label style="font-size:0.7em"><input type="checkbox" class="b-chain"> Chain?</label>
+                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+            `;
+            document.getElementById('backlogContainer').appendChild(div);
+        }
 
-        let tempTime = new Date(deadlineForThisGroup);
-        let timeline = [];
-        group.steps.forEach(step => {
-            let finish = new Date(tempTime);
-            tempTime.setMinutes(tempTime.getMinutes() - (step.active + step.proc));
-            timeline.push({ ...step, start: new Date(tempTime), finish: finish });
-        });
-        nextNeededStart = new Date(tempTime);
-        computedGroups.unshift({ name: group.name, timeline: timeline.reverse() });
-    }
+        function calculate() {
+            const masterDeadlineStr = document.getElementById('deadline').value;
+            const [h, m] = masterDeadlineStr.split(':');
+            const baseDeadline = new Date();
+            baseDeadline.setHours(h, m, 0);
 
-    // 3. Render and Slot Routines
-    let html = `<h2>Master Timeline (Chained Routines)</h2>`;
-    computedGroups.forEach(group => {
-        html += `<h3 style="border-bottom: 2px solid #55efc4; color:#55efc4; margin-top:20px;">${group.name}</h3>`;
-        group.timeline.forEach(item => {
-            html += `<div style="margin-bottom:10px; border-left:2px solid #555; padding-left:15px;">
-                <span class="time-mark">${item.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>: <b>${item.name}</b> (${item.active}m)`;
-            
-            let gapRemaining = item.proc;
-            routines.forEach(routine => {
-                if (!routine.used && routine.totalTime <= gapRemaining && routine.totalTime > 0) {
-                    routine.tasks.forEach(t => {
-                        html += `<div style="margin-left:20px; color:#a29bfe;">🔗 Routine: ${t.name} (${t.time}m)</div>`;
+            let backlogElements = Array.from(document.querySelectorAll('.backlog-item'));
+            let routines = [];
+            let currentRoutine = [];
+
+            backlogElements.forEach((el, index) => {
+                let task = {
+                    name: el.querySelector('.b-name').value || "Task",
+                    time: parseInt(el.querySelector('.b-time').value) || 0
+                };
+                currentRoutine.push(task);
+                
+                if (!el.querySelector('.b-chain').checked || index === backlogElements.length - 1) {
+                    routines.push({ 
+                        tasks: currentRoutine, 
+                        totalTime: currentRoutine.reduce((sum, t) => sum + t.time, 0), 
+                        used: false 
                     });
-                    gapRemaining -= routine.totalTime;
-                    routine.used = true;
+                    currentRoutine = [];
                 }
             });
-            html += `<br><span class="time-mark">${item.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>: Phase Ends</div>`;
-        });
-    });
 
-    document.getElementById('output').innerHTML = html;
-}
+            let groupElements = Array.from(document.querySelectorAll('.group-container'));
+            let groupData = groupElements.map((el, index) => ({
+                name: el.querySelector('.g-name').value || `Project ${index+1}`,
+                link: el.querySelector('.g-link')?.value || 'parallel',
+                steps: Array.from(el.querySelectorAll('.sub-task')).map(s => ({
+                    name: s.querySelector('.s-name').value || "Step",
+                    active: parseInt(s.querySelector('.s-active').value) || 0,
+                    proc: parseInt(s.querySelector('.s-proc').value) || 0
+                })).reverse()
+            }));
 
-addGroup();
-addBacklog();
-</script>
-    </body>
+            let computedGroups = [];
+            let nextNeededStart = new Date(baseDeadline);
+
+            for (let i = groupData.length - 1; i >= 0; i--) {
+                let group = groupData[i];
+                let deadlineForThisGroup = (i < groupData.length - 1 && groupData[i+1].link === 'sequential') ? new Date(nextNeededStart) : new Date(baseDeadline);
+
+                let tempTime = new Date(deadlineForThisGroup);
+                let timeline = [];
+                group.steps.forEach(step => {
+                    let finish = new Date(tempTime);
+                    tempTime.setMinutes(tempTime.getMinutes() - (step.active + step.proc));
+                    timeline.push({ ...step, start: new Date(tempTime), finish: finish });
+                });
+                nextNeededStart = new Date(tempTime);
+                computedGroups.unshift({ name: group.name, timeline: timeline.reverse() });
+            }
+
+            let html = `<h2 style="color:var(--accent-green); text-align:center;">Master Timeline</h2>`;
+            computedGroups.forEach(group => {
+                html += `<h3 style="border-bottom: 2px solid #55efc4; color:#55efc4; margin-top:20px;">${group.name}</h3>`;
+                group.timeline.forEach(item => {
+                    html += `<div style="margin-bottom:10px; border-left:2px solid #555; padding-left:15px;">
+                        <span class="time-mark">${item.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>: <b>${item.name}</b> (${item.active}m)`;
+                    
+                    let gapRemaining = item.proc;
+                    routines.forEach(routine => {
+                        if (!routine.used && routine.totalTime <= gapRemaining && routine.totalTime > 0) {
+                            routine.tasks.forEach(t => {
+                                html += `<div style="margin-left:20px; color:#a29bfe; font-size:0.9em;">🔗 Routine: ${t.name} (${t.time}m)</div>`;
+                            });
+                            gapRemaining -= routine.totalTime;
+                            routine.used = true;
+                        }
+                    });
+                    html += `<br><span class="time-mark">${item.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>: Phase Ends</div>`;
+                });
+            });
+
+            document.getElementById('output').innerHTML = html;
+        }
+
+        // Initialize with one of each
+        addGroup();
+        addBacklog();
+    </script>
+</body>
 </html>
