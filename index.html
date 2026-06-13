@@ -244,7 +244,7 @@
                 <strong style="color: var(--text-muted);">ABSOLUTE DEADLINE:</strong> 
                 <input type="time" id="deadline" value="17:00" style="font-size: 1.1em; padding: 10px;">
                 <div class="info-tip" tabindex="0">?
-                    <div class="tip-box">The ultimate finish line. The planner works backwards from this time to tell you exactly when you need to start your very first task.</div>
+                    <div class="tip-box">The ultimate finish line. The app works backwards from this time to tell you exactly when you need to start your very first task.</div>
                 </div>
             </div>
             <button class="scheduler-btn" onclick="calculate()" style="background:var(--accent-green); color:var(--bg); width:100%; max-width:300px; font-size: 1.1em;">BUILD SCHEDULE</button>
@@ -632,7 +632,7 @@
             let clashingFixed = fixedBacklog.filter(t => t.clashed);
             let unclashingFixed = fixedBacklog.filter(t => !t.clashed);
 
-            let html = `<h2 style="color:var(--accent-green); text-align:center; margin-top:0; font-size:1.3rem;">MASTER TIMELINE</h2>`;
+            let html = `<h2 style="color:var(--accent-green); text-align:center; margin-top:0; font-size:1.3rem;">SHEDULE</h2>`;
 
             if (clashingFixed.length > 0) {
                 html += `<div style="border: 1px dashed var(--danger); padding: 15px; border-radius: 8px; background: rgba(239, 68, 68, 0.05); margin-bottom: 25px;">
@@ -710,7 +710,7 @@
                                     
                                     let taskEnd = new Date(currentGapTime.getTime() + (t.time * 60000));
                                     window.calendarEvents.push({
-                                        title: `[Routine] ${t.name}`,
+                                        title: `[Task] ${t.name}`,
                                         start: new Date(currentGapTime),
                                         end: taskEnd,
                                         description: `Auto-filled during wait phase of: ${step.name}`
@@ -746,7 +746,7 @@
             if (unusedRoutines.length > 0) {
                 html += `<div style="margin-top: 30px; padding: 15px; border: 1px dashed var(--danger); border-radius: 6px; background: rgba(239, 68, 68, 0.05);">
                     <h4 style="color: var(--danger); margin-top: 0; margin-bottom: 10px;">Unscheduled Routines</h4>
-                    <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px;">The following backlog tasks couldn't fit into your processing gaps:</p>
+                    <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px;">The following quick tasks couldn't fit into your processing gaps:</p>
                     <ul style="margin-bottom: 0; font-size: 0.9em; color: var(--text-muted); padding-left: 20px;">`;
                 unusedRoutines.forEach(r => {
                     html += `<li style="margin-bottom: 4px;">${r.tasks.map(t => t.name).join(' → ')} (${r.totalTime}m total)</li>`;
