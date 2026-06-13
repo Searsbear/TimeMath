@@ -234,11 +234,72 @@
         .routine-slot { margin-left: 25px; color: var(--accent-purple); font-size: 0.95em; padding: 4px 0; display: flex; align-items: center; gap: 8px;}
         .routine-slot::before { content: '↳'; color: #64748b; }
 
-        @media (max-width: 768px) {
-            .scheduler-grid { grid-template-columns: 1fr; }
-            .time-inputs { display: flex; flex-wrap: wrap; gap: 10px; flex-grow: 1; }
-            .top-controls { flex-direction: column; }
+                @media (max-width: 768px) {
+            body { 
+                padding: 10px; 
+            }
+            .container { 
+                padding: 15px; 
+            }
+            .scheduler-grid { 
+                grid-template-columns: 1fr; 
+            }
+            .top-controls { 
+                flex-direction: column; 
+            }
+
+            /* 1. Force text inputs to their own line so buttons don't squeeze them */
+            .row-flex { 
+                flex-wrap: wrap; 
+            }
+            .sub-task > div:first-child { 
+                flex-wrap: wrap; 
+            }
+            .g-name, .s-name, .b-name { 
+                flex-basis: 100%; 
+                margin-bottom: 8px; 
+            }
+            
+            /* 2. Stack time inputs and rigid scheduling controls */
+            .time-inputs { 
+                flex-direction: column; 
+                align-items: flex-start !important; 
+            }
+            .fixed-controls { 
+                flex-wrap: wrap; 
+                padding: 10px; 
+            }
+            .fixed-inputs { 
+                flex-wrap: wrap; 
+                width: 100%; 
+                margin-top: 5px; 
+            }
+
+            /* 3. Keep execution bar inputs from overflowing */
+            .execution-bar > div { 
+                flex-direction: column; 
+                text-align: center; 
+            }
+            
+            /* 4. Prevent tooltips from blowing out the screen width */
+            .info-tip .tip-box {
+                width: 220px;
+                left: auto;
+                right: -50px;
+                transform: none;
+            }
+            .info-tip .tip-box::after {
+                left: auto;
+                right: 56px;
+            }
+            .right-aligned-tip .tip-box {
+                right: -10px;
+            }
+            .right-aligned-tip .tip-box::after {
+                right: 16px;
+            }
         }
+
     </style>
 </head>
 <body>
