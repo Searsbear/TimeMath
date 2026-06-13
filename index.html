@@ -47,8 +47,38 @@
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 1.5rem;
+        }
+
+        .top-controls {
+            display: flex; gap: 15px; margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .library-panel {
+            display: none; background: #0f172a; border: 1px solid var(--accent-blue);
+            padding: 20px; border-radius: 8px; margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .library-tabs {
+            display: flex; gap: 10px; border-bottom: 1px solid var(--border);
+            padding-bottom: 10px; margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: transparent; border: 1px solid transparent; color: var(--text-muted);
+            padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn.active-tab-green { border-color: var(--accent-green); color: var(--accent-green); background: rgba(16, 185, 129, 0.1); }
+        .tab-btn.active-tab-purple { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(168, 85, 247, 0.1); }
+
+        .lib-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1e293b; padding: 12px; margin-bottom: 10px; border-radius: 6px;
         }
 
         .scheduler-grid {
@@ -186,7 +216,7 @@
         .info-tip:hover .tip-box, .info-tip:focus .tip-box { visibility: visible; opacity: 1; }
         .right-aligned-tip .tip-box { right: auto; left: 0; transform: translateX(-20px); }
         .right-aligned-tip .tip-box::after { right: auto; left: 26px; margin-right: 0; }
-        
+
         .execution-bar {
             text-align: center; margin: 30px 0 10px; padding: 20px; 
             background: #152033; border: 1px solid var(--border);
@@ -207,6 +237,7 @@
         @media (max-width: 768px) {
             .scheduler-grid { grid-template-columns: 1fr; }
             .time-inputs { display: flex; flex-wrap: wrap; gap: 10px; flex-grow: 1; }
+            .top-controls { flex-direction: column; }
         }
     </style>
 </head>
@@ -214,6 +245,25 @@
 
     <div class="container">
         <h2 class="header-title">Time Management Planner</h2>
+
+        <div class="top-controls">
+            <button class="scheduler-btn" onclick="exportData()" style="flex:1; border-color: #64748b; color: #cbd5e1;">💾 Save Routine</button>
+            <input type="file" id="fileImport" style="display:none" accept=".json" onchange="importData(event)">
+            <button class="scheduler-btn" onclick="document.getElementById('fileImport').click()" style="flex:1; border-color: #64748b; color: #cbd5e1;">📂 Import Routine</button>
+        </div>
+
+        <div id="libraryPanel" class="library-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--accent-blue); border-bottom: none; margin: 0;">📚 Import Library</h3>
+                <button class="btn-del" onclick="document.getElementById('libraryPanel').style.display='none'">Close Library</button>
+            </div>
+            <div class="library-tabs">
+                <button id="tab-btn-groups" class="tab-btn active-tab-green" onclick="switchTab('groups')">Projects</button>
+                <button id="tab-btn-tasks" class="tab-btn" onclick="switchTab('tasks')">Quick Tasks</button>
+            </div>
+            <div id="lib-groups" style="display:block;"></div>
+            <div id="lib-tasks" style="display:none;"></div>
+        </div>
 
         <div class="scheduler-grid">
             <div>
@@ -257,6 +307,122 @@
 
     <script>
         window.calendarEvents = [];
+        window.libraryData = { groups: [], backlog: [] };
+
+        // --- SAVE AND LOAD LOGIC ---
+        function exportData() {
+            let groups = Array.from(document.querySelectorAll('.group-container')).map(el => {
+                return {
+                    name: el.querySelector('.g-name').value,
+                    link: el.querySelector('.g-link') ? el.querySelector('.g-link').value : 'parallel',
+                    steps: Array.from(el.querySelectorAll('.sub-task')).map(s => ({
+                        name: s.querySelector('.s-name').value,
+                        active: s.querySelector('.s-active').value,
+                        proc: s.querySelector('.s-proc').value,
+                        isFixed: s.querySelector('.s-fixed-toggle').checked,
+                        fixedMode: s.querySelector('.s-fixed-mode').value,
+                        fixedTime: s.querySelector('.s-fixed-time').value
+                    }))
+                };
+            });
+
+            let backlog = Array.from(document.querySelectorAll('.backlog-item')).map(el => {
+                return {
+                    name: el.querySelector('.b-name').value,
+                    time: el.querySelector('.b-time').value,
+                    isChain: el.querySelector('.b-chain').checked,
+                    isFixed: el.querySelector('.b-fixed-toggle').checked,
+                    fixedMode: el.querySelector('.b-fixed-mode').value,
+                    fixedTime: el.querySelector('.b-fixed-time').value
+                };
+            });
+
+            const data = { groups, backlog };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "planner_routine.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    window.libraryData = JSON.parse(e.target.result);
+                    renderLibrary();
+                    document.getElementById('libraryPanel').style.display = 'block';
+                } catch(err) {
+                    alert("Invalid file format. Please upload a valid JSON routine file.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        }
+
+        function switchTab(tab) {
+            document.getElementById('lib-groups').style.display = tab === 'groups' ? 'block' : 'none';
+            document.getElementById('lib-tasks').style.display = tab === 'tasks' ? 'block' : 'none';
+            
+            document.getElementById('tab-btn-groups').className = tab === 'groups' ? 'tab-btn active-tab-green' : 'tab-btn';
+            document.getElementById('tab-btn-tasks').className = tab === 'tasks' ? 'tab-btn active-tab-purple' : 'tab-btn';
+        }
+
+        function renderLibrary() {
+            const groupContainer = document.getElementById('lib-groups');
+            const taskContainer = document.getElementById('lib-tasks');
+            groupContainer.innerHTML = '';
+            taskContainer.innerHTML = '';
+
+            if (window.libraryData.groups && window.libraryData.groups.length > 0) {
+                window.libraryData.groups.forEach((g, index) => {
+                    const stepsText = g.steps.length + (g.steps.length === 1 ? " step" : " steps");
+                    groupContainer.innerHTML += `
+                        <div class="lib-item">
+                            <div>
+                                <strong style="color:var(--text);">${g.name || 'Unnamed Project'}</strong>
+                                <div style="font-size:0.85em; color:var(--text-muted);">${stepsText} | Link: ${g.link}</div>
+                            </div>
+                            <button class="scheduler-btn" style="min-height:30px; padding:6px 12px; font-size:0.8em;" onclick="injectGroupFromLibrary(${index})">+ Add to Planner</button>
+                        </div>
+                    `;
+                });
+            } else {
+                groupContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9em;">No projects found in this file.</p>`;
+            }
+
+            if (window.libraryData.backlog && window.libraryData.backlog.length > 0) {
+                window.libraryData.backlog.forEach((t, index) => {
+                    taskContainer.innerHTML += `
+                        <div class="lib-item" style="border-left: 2px solid var(--accent-purple);">
+                            <div>
+                                <strong style="color:var(--text);">${t.name || 'Unnamed Task'}</strong>
+                                <div style="font-size:0.85em; color:var(--text-muted);">${t.time} mins ${t.isChain ? '| Chained' : ''} ${t.isFixed ? '| Fixed Time' : ''}</div>
+                            </div>
+                            <button class="scheduler-btn" style="min-height:30px; padding:6px 12px; font-size:0.8em; border-color:var(--accent-purple); color:var(--accent-purple);" onclick="injectTaskFromLibrary(${index})">+ Add Task</button>
+                        </div>
+                    `;
+                });
+            } else {
+                taskContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9em;">No quick tasks found in this file.</p>`;
+            }
+        }
+
+        function injectGroupFromLibrary(index) {
+            const data = window.libraryData.groups[index];
+            if (data) addGroup(data);
+        }
+
+        function injectTaskFromLibrary(index) {
+            const data = window.libraryData.backlog[index];
+            if (data) addBacklog(data);
+        }
+
+        // --- CORE UI LOGIC ---
 
         function updateLinks() {
             const groups = document.querySelectorAll('.group-container');
@@ -282,8 +448,8 @@
             updateLinks();
         }
 
-        function addGroup() {
-            const id = Date.now();
+        function addGroup(data = null) {
+            const id = Date.now() + Math.floor(Math.random() * 1000);
             const div = document.createElement('div');
             div.className = 'group-container';
             div.innerHTML = `
@@ -309,9 +475,21 @@
             `;
             document.getElementById('allGroups').appendChild(div);
             updateLinks();
+
+            if (data) {
+                div.querySelector('.g-name').value = data.name || '';
+                if(div.querySelector('.g-link')) div.querySelector('.g-link').value = data.link || 'parallel';
+                if(data.steps && data.steps.length > 0) {
+                    data.steps.forEach(stepData => addSubTask(id, stepData));
+                } else {
+                    addSubTask(id);
+                }
+            } else {
+                addSubTask(id);
+            }
         }
 
-        function addSubTask(groupId) {
+        function addSubTask(groupId, data = null) {
             const container = document.getElementById(`steps-${groupId}`);
             const div = document.createElement('div');
             div.className = 'sub-task';
@@ -357,9 +535,21 @@
                     </div>
                 </div>`;
             container.appendChild(div);
+
+            if (data) {
+                div.querySelector('.s-name').value = data.name || '';
+                div.querySelector('.s-active').value = data.active !== undefined ? data.active : 10;
+                div.querySelector('.s-proc').value = data.proc !== undefined ? data.proc : 30;
+                if (data.isFixed) {
+                    div.querySelector('.s-fixed-toggle').checked = true;
+                    div.querySelector('.fixed-inputs').style.display = 'flex';
+                    div.querySelector('.s-fixed-mode').value = data.fixedMode || 'start';
+                    div.querySelector('.s-fixed-time').value = data.fixedTime || '';
+                }
+            }
         }
 
-        function addBacklog() {
+        function addBacklog(data = null) {
             const div = document.createElement('div');
             div.className = 'backlog-item';
             div.innerHTML = `
@@ -396,7 +586,21 @@
                 </div>
             `;
             document.getElementById('backlogContainer').appendChild(div);
+
+            if (data) {
+                div.querySelector('.b-name').value = data.name || '';
+                div.querySelector('.b-time').value = data.time !== undefined ? data.time : 5;
+                div.querySelector('.b-chain').checked = data.isChain || false;
+                if (data.isFixed) {
+                    div.querySelector('.b-fixed-toggle').checked = true;
+                    div.querySelector('.fixed-inputs').style.display = 'flex';
+                    div.querySelector('.b-fixed-mode').value = data.fixedMode || 'start';
+                    div.querySelector('.b-fixed-time').value = data.fixedTime || '';
+                }
+            }
         }
+
+        // --- SCHEDULING LOGIC ---
 
         function formatDateToICS(date) {
             const pad = (n) => n < 10 ? '0' + n : n;
@@ -415,7 +619,7 @@
             }
 
             let icsMSG = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Chained Routine Planner//EN\n";
-            
+
             window.calendarEvents.forEach(evt => {
                 icsMSG += "BEGIN:VEVENT\n";
                 icsMSG += "SUMMARY:" + evt.title + "\n";
@@ -431,7 +635,7 @@
                 icsMSG += "END:VALARM\n";
                 icsMSG += "END:VEVENT\n";
             });
-            
+
             icsMSG += "END:VCALENDAR";
 
             const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
@@ -498,7 +702,7 @@
                     let fDate = new Date(baseDeadline);
                     fDate.setHours(fh, fm, 0, 0);
                     let mode = el.querySelector('.b-fixed-mode').value;
-                    
+
                     let start, finish;
                     if (mode === 'start') {
                         start = fDate;
@@ -508,7 +712,7 @@
                         start = new Date(fDate.getTime() - task.time * 60000);
                     }
                     fixedBacklog.push({ ...task, start, finish });
-                    
+
                     masterBlocked.push({ start, finish, name: task.name, id: task.id });
 
                     window.calendarEvents.push({
@@ -517,7 +721,7 @@
                         end: finish,
                         description: "Strictly Scheduled Quick Task"
                     });
-                    
+
                     return; 
                 }
 
@@ -605,7 +809,7 @@
                     timeline.push({ 
                         ...step, start: start, activeFinish: activeFinish, finish: finish 
                     });
-                    
+
                     window.calendarEvents.push({
                         title: `${group.name}: ${step.name}`,
                         start: start,
@@ -638,7 +842,7 @@
                 html += `<div style="border: 1px dashed var(--danger); padding: 15px; border-radius: 8px; background: rgba(239, 68, 68, 0.05); margin-bottom: 25px;">
                     <h3 style="border-bottom: 2px solid var(--danger); color:var(--danger); margin-top:0;">[ ⚠️ Rigid Scheduling Conflicts ]</h3>
                     <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">Multiple rigid tasks overlap with each other.</p>`;
-                
+
                 clashingFixed.sort((a,b) => a.start - b.start).forEach(task => {
                     const sFmt = task.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                     const fFmt = task.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -653,7 +857,7 @@
             }
 
             let masterTimeline = [];
-            
+
             computedGroups.forEach(group => {
                 group.timeline.forEach(step => {
                     masterTimeline.push({ type: 'step', start: step.start, groupName: group.name, data: step });
@@ -675,12 +879,12 @@
             masterTimeline.forEach(item => {
                 if (item.type === 'step') {
                     let step = item.data;
-                    
+
                     if (item.groupName !== currentGroupName) {
                         html += `<h3 style="border-bottom: 2px solid var(--accent-blue); color:var(--accent-blue); margin-top:30px;">[ ${item.groupName} ]</h3>`;
                         currentGroupName = item.groupName;
                     }
-                    
+
                     const startFmt = step.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                     const activeFmt = step.activeFinish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                     const finishFmt = step.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -700,14 +904,14 @@
 
                         let gapRemaining = step.proc;
                         let currentGapTime = new Date(step.activeFinish); 
-                        
+
                         routines.forEach(routine => {
                             if (!routine.used && routine.totalTime <= gapRemaining && routine.totalTime > 0) {
                                 routine.tasks.forEach(t => {
                                     html += `<div class="routine-slot">
                                         <strong>${t.name}</strong> <span>(${t.time}m)</span>
                                     </div>`;
-                                    
+
                                     let taskEnd = new Date(currentGapTime.getTime() + (t.time * 60000));
                                     window.calendarEvents.push({
                                         title: `[Task] ${t.name}`,
@@ -732,7 +936,7 @@
                     let task = item.data;
                     const sFmt = task.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                     const fFmt = task.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    
+
                     html += `<div style="margin-bottom:20px; border-left:3px solid var(--accent-purple); padding-left:15px; background: rgba(168, 85, 247, 0.05); padding-top: 8px; padding-bottom: 8px; border-radius: 0 6px 6px 0;">
                         <span class="time-mark" style="color:var(--accent-purple)">${sFmt}</span>: 
                         <strong style="color:white; font-size:1.05em;">${task.name}</strong> 
@@ -766,8 +970,8 @@
             document.getElementById('output').innerHTML = html;
         }
 
+        // Initialize empty state
         addGroup();
-        addSubTask(document.querySelector('.group-container').id || Date.now());
         addBacklog();
     </script>
 </body>
