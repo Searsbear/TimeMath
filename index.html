@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chained Routine Planner</title>
+    <title>Time Management Planner</title>
     <style>
         :root {
             --bg: #020617;
@@ -69,7 +69,6 @@
             align-items: center;
         }
 
-        /* Card Styles */
         .group-container, .backlog-item {
             background: #152033;
             border: 1px solid var(--border);
@@ -79,7 +78,6 @@
             transition: all 0.2s ease;
         }
 
-        /* Flex Layouts for Rows */
         .row-flex {
             display: flex;
             align-items: center;
@@ -99,7 +97,6 @@
             border-radius: 6px;
         }
 
-        /* Inputs */
         input, select {
             background: var(--input-bg);
             border: 1px solid #475569;
@@ -109,15 +106,14 @@
             font-family: inherit;
             outline: none;
             transition: border-color 0.2s;
-            font-size: 16px; /* Prevents iOS auto-zoom */
+            font-size: 16px;
         }
 
         input:focus, select:focus { border-color: var(--accent-green); }
-        
+
         .flex-grow { flex-grow: 1; min-width: 120px; }
         .w-small { width: 75px; }
 
-        /* Buttons */
         button { font-family: inherit; }
 
         .scheduler-btn {
@@ -134,221 +130,97 @@
             min-height: 44px;
         }
 
-        .scheduler-btn:hover {
-            background: var(--accent-green);
-            color: var(--bg);
-        }
+        .scheduler-btn:hover { background: var(--accent-green); color: var(--bg); }
 
         .btn-del { 
-            color: var(--danger); 
-            border: 1px solid transparent; 
-            background: rgba(239, 68, 68, 0.1); 
-            cursor: pointer; 
-            font-size: 0.85em; 
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-weight: bold;
-            min-height: 38px;
+            color: var(--danger); border: 1px solid transparent; 
+            background: rgba(239, 68, 68, 0.1); cursor: pointer; 
+            font-size: 0.85em; padding: 8px 12px; border-radius: 4px;
+            font-weight: bold; min-height: 38px;
         }
-        
+
         .btn-move { 
-            background: #334155; 
-            color: var(--text-muted); 
-            border: none; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            padding: 8px 12px; 
-            font-size: 0.9em;
-            min-height: 38px;
+            background: #334155; color: var(--text-muted); border: none; 
+            cursor: pointer; border-radius: 4px; padding: 8px 12px; 
+            font-size: 0.9em; min-height: 38px;
         }
 
-        /* Dynamic Link Style */
         .link-wrapper {
-            background: #1e293b;
-            padding: 10px;
-            margin-bottom: 12px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            color: var(--text-muted);
+            background: #1e293b; padding: 10px; margin-bottom: 12px;
+            border-radius: 4px; font-size: 0.9em; display: flex;
+            align-items: center; flex-wrap: wrap; gap: 10px; color: var(--text-muted);
         }
 
-        /* =========================================
-           TOOLTIP SYSTEM
-        ========================================= */
+        .fixed-controls {
+            width: 100%; margin-top: 5px; display: flex; align-items: center; 
+            gap: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;
+        }
+
         .info-tip {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #334155;
-            color: var(--text-muted);
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: help;
-            margin-left: 6px;
-            user-select: none;
-            outline: none;
-            transition: background 0.2s, color 0.2s;
+            position: relative; display: inline-flex; align-items: center;
+            justify-content: center; background: #334155; color: var(--text-muted);
+            border-radius: 50%; width: 18px; height: 18px; font-size: 11px;
+            font-weight: bold; cursor: help; margin-left: 6px; user-select: none;
+            outline: none; transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
         }
 
-        .info-tip:hover, .info-tip:focus {
-            background: var(--accent-blue);
-            color: var(--bg);
-        }
+        .info-tip:hover, .info-tip:focus { background: var(--accent-blue); color: var(--bg); }
 
         .info-tip .tip-box {
-            visibility: hidden;
-            width: 240px;
-            background-color: #1e293b;
-            color: var(--text);
-            text-align: left;
-            border: 1px solid var(--accent-blue);
-            border-radius: 8px;
-            padding: 12px;
-            position: absolute;
-            z-index: 99;
-            bottom: 135%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.2s, visibility 0.2s;
-            font-weight: normal;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            visibility: hidden; width: 240px; background-color: #1e293b;
+            color: var(--text); text-align: left; border: 1px solid var(--accent-blue);
+            border-radius: 8px; padding: 12px; position: absolute; z-index: 99;
+            bottom: 135%; left: 50%; transform: translateX(-50%); opacity: 0;
+            transition: opacity 0.2s, visibility 0.2s; font-weight: normal;
+            font-size: 0.85rem; line-height: 1.4; box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             pointer-events: none;
-            text-transform: none;
-            letter-spacing: normal;
         }
 
-        /* Tooltip Arrow */
         .info-tip .tip-box::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -6px;
-            border-width: 6px;
-            border-style: solid;
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -6px; border-width: 6px; border-style: solid;
             border-color: var(--accent-blue) transparent transparent transparent;
         }
 
-        /* Trigger conditions */
-        .info-tip:hover .tip-box, .info-tip:focus .tip-box {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Right-aligned layout adjustments (Keeps boxes inside viewport bounds) */
-        .right-aligned-tip .tip-box {
-            right: auto;
-            left: 0;
-            transform: translateX(0);
-        }
-        .right-aligned-tip .tip-box::after {
-            right: auto;
-            left: 10px;
-            margin-right: 0;
-        }
-
-        /* Left-aligned layout adjustments */
-        .left-aligned-tip .tip-box {
-            left: 0;
-            transform: translateX(0);
-        }
-        .left-aligned-tip .tip-box::after {
-            left: 10px;
-            margin-left: 0;
-        }
-
-        /* Execution Area */
+        .info-tip:hover .tip-box, .info-tip:focus .tip-box { visibility: visible; opacity: 1; }
+        .right-aligned-tip .tip-box { right: auto; left: 0; transform: translateX(-20px); }
+        .right-aligned-tip .tip-box::after { right: auto; left: 26px; margin-right: 0; }
+        
         .execution-bar {
-            text-align: center; 
-            margin: 30px 0 10px; 
-            padding: 20px; 
-            background: #152033; 
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
+            text-align: center; margin: 30px 0 10px; padding: 20px; 
+            background: #152033; border: 1px solid var(--border);
+            border-radius: 8px; display: flex; flex-direction: column;
+            align-items: center; gap: 15px;
         }
 
         .output {
-            margin-top: 20px;
-            padding: 25px;
-            background: #020617;
-            border: 1px solid var(--accent-green);
-            border-radius: 8px;
-            overflow-x: auto;
+            margin-top: 20px; padding: 25px; background: #020617;
+            border: 1px solid var(--accent-green); border-radius: 8px; overflow-x: auto;
         }
 
-        .time-mark {
-            color: var(--accent-green);
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 1.05em;
-        }
-        
+        .time-mark { color: var(--accent-green); font-family: monospace; font-weight: bold; font-size: 1.05em; }
         .phase-mark { color: var(--text-muted); font-size: 0.9em; font-style: italic; }
         .routine-slot { margin-left: 25px; color: var(--accent-purple); font-size: 0.95em; padding: 4px 0; display: flex; align-items: center; gap: 8px;}
         .routine-slot::before { content: '↳'; color: #64748b; }
 
-        /* =========================================
-           MOBILE RESPONSIVENESS
-        ========================================= */
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 15px; }
-            .scheduler-grid { grid-template-columns: 1fr; gap: 15px; }
-            
-            .s-name, .b-name {
-                width: 100%;
-                order: -1;
-                margin-bottom: 5px;
-            }
-
-            .time-inputs {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                flex-grow: 1;
-            }
-            
-            .g-name {
-                width: 100%;
-                order: -1;
-                margin-bottom: 5px;
-            }
-
-            .execution-bar { padding: 15px; }
-            .header-title { font-size: 1.25rem; }
-            
-            .info-tip .tip-box {
-                width: 200px;
-            }
+            .scheduler-grid { grid-template-columns: 1fr; }
+            .time-inputs { display: flex; flex-wrap: wrap; gap: 10px; flex-grow: 1; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2 class="header-title">CHAINED ROUTINE PLANNER</h2>
+        <h2 class="header-title">Time Management Planner</h2>
 
         <div class="scheduler-grid">
             <div>
                 <h3>
                     <span style="color:var(--accent-green);">> Project Groups</span>
                     <div class="info-tip" tabindex="0">?
-                        <div class="tip-box">A main goal broken down into steps. E.g., Cooking a meal or doing laundry. Each group has its own timeline.</div>
+                        <div class="tip-box">A main goal (like 'Making Dinner' or 'Laundry'). It has its own timeline built from the smaller steps you put inside it.</div>
                     </div>
                 </h3>
                 <div id="allGroups"></div>
@@ -359,7 +231,7 @@
                 <h3>
                     <span style="color:var(--accent-purple);">> Quick Task Backlog</span>
                     <div class="info-tip" tabindex="0">?
-                        <div class="tip-box">Small, flexible chores (e.g., wash a dish, text an update) that the system will auto-fit into your downtime wait phases.</div>
+                        <div class="tip-box right-aligned-tip">Tiny chores (like 'Wipe counters'). The app automatically hides these inside the 'Wait' times of your bigger projects so you're always productive.</div>
                     </div>
                 </h3>
                 <div id="backlogContainer"></div>
@@ -372,7 +244,7 @@
                 <strong style="color: var(--text-muted);">MASTER DEADLINE:</strong> 
                 <input type="time" id="deadline" value="17:00" style="font-size: 1.1em; padding: 10px;">
                 <div class="info-tip" tabindex="0">?
-                    <div class="tip-box">The absolute time everything must finish. The algorithm calculates backward from here to show exactly when you must start.</div>
+                    <div class="tip-box">The ultimate finish line. The app works backwards from this time to tell you exactly when you need to start your very first task.</div>
                 </div>
             </div>
             <button class="scheduler-btn" onclick="calculate()" style="background:var(--accent-green); color:var(--bg); width:100%; max-width:300px; font-size: 1.1em;">RUN OPTIMIZATION</button>
@@ -384,20 +256,19 @@
     </div>
 
     <script>
+        window.calendarEvents = [];
+
         function updateLinks() {
             const groups = document.querySelectorAll('.group-container');
             groups.forEach((group, index) => {
                 const linkWrapper = group.querySelector('.link-wrapper');
-                if (linkWrapper) {
-                    linkWrapper.style.display = index === 0 ? 'none' : 'flex';
-                }
+                if (linkWrapper) linkWrapper.style.display = index === 0 ? 'none' : 'flex';
             });
         }
 
         function move(btn, selector, direction) {
             const row = btn.closest(selector);
             if (!row) return;
-
             if (direction === 'up' && row.previousElementSibling) {
                 row.parentNode.insertBefore(row, row.previousElementSibling);
             } else if (direction === 'down' && row.nextElementSibling) {
@@ -417,14 +288,15 @@
             div.className = 'group-container';
             div.innerHTML = `
                 <div class="link-wrapper">
-                    <span>Timing:</span> 
+                    <span style="display:flex; align-items:center;">Timing: 
+                        <div class="info-tip" tabindex="0" style="margin-right: 8px;">?
+                            <div class="tip-box"><strong>Parallel:</strong> Happens at the same time as other projects.<br><br><strong>Sequential:</strong> Waits for the project above it to completely finish before starting.</div>
+                        </div>
+                    </span> 
                     <select class="g-link flex-grow">
                         <option value="parallel">Parallel (Independent)</option>
                         <option value="sequential">Start After Previous Ends</option>
                     </select>
-                    <div class="info-tip right-aligned-tip" tabindex="0">?
-                        <div class="tip-box">"Parallel" lets projects overlap in time. "Start After Previous" forces this project to wait until the project listed above it concludes completely.</div>
-                    </div>
                 </div>
                 <div class="row-flex">
                     <input type="text" class="g-name flex-grow" placeholder="Project Name" style="font-weight:bold;">
@@ -444,26 +316,46 @@
             const div = document.createElement('div');
             div.className = 'sub-task';
             div.innerHTML = `
-                <input type="text" class="s-name flex-grow" placeholder="Step Name"> 
-                <button class="btn-move" onclick="move(this, '.sub-task', 'up')">↑</button>
-                <button class="btn-move" onclick="move(this, '.sub-task', 'down')">↓</button>
-                <div class="time-inputs">
+                <div style="display:flex; width:100%; gap:8px;">
+                    <input type="text" class="s-name flex-grow" placeholder="Step Name"> 
+                    <button class="btn-move" onclick="move(this, '.sub-task', 'up')">↑</button>
+                    <button class="btn-move" onclick="move(this, '.sub-task', 'down')">↓</button>
+                    <button class="btn-del" onclick="removeElement(this, '.sub-task')">X</button>
+                </div>
+                <div class="time-inputs" style="display:flex; gap:10px; width:100%;">
                     <div style="display:flex; align-items:center; gap:5px;">
                         <input type="number" class="s-active w-small" value="10"> 
-                        <span style="font-size:0.8em; color:#94a3b8;">m active</span>
-                        <div class="info-tip" tabindex="0">?
-                            <div class="tip-box">Hands-on time. The amount of minutes you spend actively working on this individual step.</div>
-                        </div>
+                        <span style="font-size:0.8em; color:#94a3b8; display:flex; align-items:center;">m active
+                            <div class="info-tip" tabindex="0">?
+                                <div class="tip-box">Hands-on time (e.g., physically chopping vegetables or loading the washer).</div>
+                            </div>
+                        </span>
                     </div>
                     <div style="display:flex; align-items:center; gap:5px;">
                         <input type="number" class="s-proc w-small" value="30"> 
-                        <span style="font-size:0.8em; color:#94a3b8;">m wait</span>
-                        <div class="info-tip right-aligned-tip" tabindex="0">?
-                            <div class="tip-box">Hands-off idle time (e.g., glue drying, baking, processing). Backlog items will try to auto-fill these specific blocks!</div>
-                        </div>
+                        <span style="font-size:0.8em; color:#94a3b8; display:flex; align-items:center;">m wait
+                            <div class="info-tip" tabindex="0">?
+                                <div class="tip-box right-aligned-tip">Hands-off waiting time (e.g., food baking in the oven or washer running). The app automatically squeezes your Quick Tasks into this gap!</div>
+                            </div>
+                        </span>
                     </div>
                 </div>
-                <button class="btn-del" onclick="removeElement(this, '.sub-task')" style="margin-left: auto;">X</button>`;
+                <div class="fixed-controls">
+                    <label style="font-size:0.85em; color:var(--accent-blue); cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" class="s-fixed-toggle" onchange="this.closest('.fixed-controls').querySelector('.fixed-inputs').style.display = this.checked ? 'flex' : 'none'"> 
+                        Rigid Time Override
+                    </label>
+                    <div class="info-tip" tabindex="0">?
+                        <div class="tip-box right-aligned-tip">Lock this step to happen at an exact clock time (like a scheduled meeting). The app will build the rest of your flexible schedule around it.</div>
+                    </div>
+                    <div class="fixed-inputs" style="display:none; gap:5px; align-items:center; flex-grow: 1;">
+                        <select class="s-fixed-mode" style="padding: 5px; font-size: 0.85em; max-height: 35px;">
+                            <option value="start">Start At</option>
+                            <option value="finish">Finish By</option>
+                        </select>
+                        <input type="time" class="s-fixed-time" style="padding: 5px; font-size: 0.85em; max-height: 35px;">
+                    </div>
+                </div>`;
             container.appendChild(div);
         }
 
@@ -471,44 +363,165 @@
             const div = document.createElement('div');
             div.className = 'backlog-item';
             div.innerHTML = `
-                <div class="row-flex" style="margin:0;">
+                <div class="row-flex" style="margin:0; width:100%;">
                     <input type="text" class="b-name flex-grow" placeholder="Quick Task"> 
                     <button class="btn-move" onclick="move(this, '.backlog-item', 'up')">↑</button>
                     <button class="btn-move" onclick="move(this, '.backlog-item', 'down')">↓</button>
-                    <div style="display:flex; align-items:center; gap: 10px;">
-                        <input type="number" class="b-time w-small" value="5"> 
-                        <label style="font-size:0.9em; color:var(--text-muted); display:flex; align-items:center; gap:4px; cursor:pointer;">
-                            <input type="checkbox" class="b-chain"> Chain?
-                        </label>
-                        <div class="info-tip" tabindex="0">?
-                            <div class="tip-box">Check "Chain?" if the next backlog item must be performed right after this one as an unbroken block of time.</div>
-                        </div>
+                    <button class="btn-del" onclick="removeElement(this, '.backlog-item')">X</button>
+                </div>
+                <div style="display:flex; align-items:center; gap: 10px; width:100%; margin-top:5px;">
+                    <input type="number" class="b-time w-small" value="5"> <span style="font-size:0.8em; color:#94a3b8;">mins</span>
+                    <label style="font-size:0.9em; color:var(--text-muted); display:flex; align-items:center; gap:4px; cursor:pointer; margin-left: 10px;">
+                        <input type="checkbox" class="b-chain"> Chain?
+                    </label>
+                    <div class="info-tip" tabindex="0">?
+                        <div class="tip-box right-aligned-tip">Check this to stick this task together with the one directly below it. They will get scheduled as one combo piece instead of being separated.</div>
                     </div>
-                    <button class="btn-del" onclick="removeElement(this, '.backlog-item')" style="margin-left: auto;">X</button>
+                </div>
+                <div class="fixed-controls" style="background: rgba(168, 85, 247, 0.1);">
+                    <label style="font-size:0.85em; color:var(--accent-purple); cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" class="b-fixed-toggle" onchange="this.closest('.fixed-controls').querySelector('.fixed-inputs').style.display = this.checked ? 'flex' : 'none'"> 
+                        Set Rigid Time
+                    </label>
+                    <div class="info-tip" tabindex="0">?
+                        <div class="tip-box right-aligned-tip">Lock this chore to an exact time on the clock. It will pull it out of the backlog pool and strictly schedule it.</div>
+                    </div>
+                    <div class="fixed-inputs" style="display:none; gap:5px; align-items:center; flex-grow: 1;">
+                        <select class="b-fixed-mode" style="padding: 5px; font-size: 0.85em; max-height: 35px;">
+                            <option value="start">Start At</option>
+                            <option value="finish">Finish By</option>
+                        </select>
+                        <input type="time" class="b-fixed-time" style="padding: 5px; font-size: 0.85em; max-height: 35px;">
+                    </div>
                 </div>
             `;
             document.getElementById('backlogContainer').appendChild(div);
         }
 
+        function formatDateToICS(date) {
+            const pad = (n) => n < 10 ? '0' + n : n;
+            return date.getFullYear() +
+                   pad(date.getMonth() + 1) +
+                   pad(date.getDate()) + 'T' +
+                   pad(date.getHours()) +
+                   pad(date.getMinutes()) +
+                   pad(date.getSeconds());
+        }
+
+        function downloadICS() {
+            if (!window.calendarEvents || window.calendarEvents.length === 0) {
+                alert("No events to export. Please run optimization first!");
+                return;
+            }
+
+            let icsMSG = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Chained Routine Planner//EN\n";
+            
+            window.calendarEvents.forEach(evt => {
+                icsMSG += "BEGIN:VEVENT\n";
+                icsMSG += "SUMMARY:" + evt.title + "\n";
+                icsMSG += "DTSTART:" + formatDateToICS(evt.start) + "\n";
+                icsMSG += "DTEND:" + formatDateToICS(evt.end) + "\n";
+                if (evt.description) {
+                    icsMSG += "DESCRIPTION:" + evt.description.replace(/\n/g, '\\n') + "\n";
+                }
+                icsMSG += "BEGIN:VALARM\n";
+                icsMSG += "ACTION:DISPLAY\n";
+                icsMSG += "DESCRIPTION:Reminder\n";
+                icsMSG += "TRIGGER:-PT5M\n"; 
+                icsMSG += "END:VALARM\n";
+                icsMSG += "END:VEVENT\n";
+            });
+            
+            icsMSG += "END:VCALENDAR";
+
+            const blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "Routine_Schedule.ics";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function findFreeTimeBackward(targetFinish, durationMins, blockedIntervals) {
+            let currentFinish = new Date(targetFinish);
+            let isFree = false;
+
+            while (!isFree) {
+                let currentStart = new Date(currentFinish.getTime() - durationMins * 60000);
+                isFree = true;
+
+                let sortedBlocks = [...blockedIntervals].sort((a, b) => b.finish - a.finish);
+
+                for (let block of sortedBlocks) {
+                    if (currentStart < block.finish && currentFinish > block.start) {
+                        currentFinish = new Date(block.start);
+                        isFree = false;
+                        break; 
+                    }
+                }
+            }
+            return {
+                start: new Date(currentFinish.getTime() - durationMins * 60000),
+                finish: currentFinish
+            };
+        }
+
         function calculate() {
             const masterDeadlineStr = document.getElementById('deadline').value;
             if (!masterDeadlineStr) return alert("Please set a valid deadline.");
-            
+
             const [h, m] = masterDeadlineStr.split(':');
             const baseDeadline = new Date();
             baseDeadline.setHours(h, m, 0, 0);
 
             let backlogElements = Array.from(document.querySelectorAll('.backlog-item'));
             let routines = [];
+            let fixedBacklog = [];
             let currentRoutine = [];
+            let masterBlocked = []; 
+
+            window.calendarEvents = [];
 
             backlogElements.forEach((el, index) => {
                 let task = {
                     name: el.querySelector('.b-name').value || "Unnamed Task",
-                    time: parseInt(el.querySelector('.b-time').value) || 0
+                    time: parseInt(el.querySelector('.b-time').value) || 0,
+                    id: 'backlog_' + index
                 };
-                currentRoutine.push(task);
 
+                const isFixed = el.querySelector('.b-fixed-toggle').checked;
+                const fixedTime = el.querySelector('.b-fixed-time').value;
+
+                if (isFixed && fixedTime) {
+                    let [fh, fm] = fixedTime.split(':');
+                    let fDate = new Date(baseDeadline);
+                    fDate.setHours(fh, fm, 0, 0);
+                    let mode = el.querySelector('.b-fixed-mode').value;
+                    
+                    let start, finish;
+                    if (mode === 'start') {
+                        start = fDate;
+                        finish = new Date(fDate.getTime() + task.time * 60000);
+                    } else {
+                        finish = fDate;
+                        start = new Date(fDate.getTime() - task.time * 60000);
+                    }
+                    fixedBacklog.push({ ...task, start, finish });
+                    
+                    masterBlocked.push({ start, finish, name: task.name, id: task.id });
+
+                    window.calendarEvents.push({
+                        title: task.name,
+                        start: start,
+                        end: finish,
+                        description: "Strictly Scheduled Quick Task"
+                    });
+                    
+                    return; 
+                }
+
+                currentRoutine.push(task);
                 if (!el.querySelector('.b-chain').checked || index === backlogElements.length - 1) {
                     routines.push({ 
                         tasks: currentRoutine, 
@@ -526,9 +539,36 @@
                 steps: Array.from(el.querySelectorAll('.sub-task')).map((s, sIndex) => ({
                     name: s.querySelector('.s-name').value || `Step ${sIndex + 1}`,
                     active: parseInt(s.querySelector('.s-active').value) || 0,
-                    proc: parseInt(s.querySelector('.s-proc').value) || 0
+                    proc: parseInt(s.querySelector('.s-proc').value) || 0,
+                    isFixed: s.querySelector('.s-fixed-toggle').checked,
+                    fixedTime: s.querySelector('.s-fixed-time').value,
+                    fixedMode: s.querySelector('.s-fixed-mode').value
                 })).reverse()
             }));
+
+            groupData.forEach((group, gIndex) => {
+                group.steps.forEach((step, sIndex) => {
+                    if (step.isFixed && step.fixedTime) {
+                        const [fh, fm] = step.fixedTime.split(':');
+                        let fixedDate = new Date(baseDeadline);
+                        fixedDate.setHours(fh, fm, 0, 0);
+
+                        let start, activeFinish, finish;
+                        if (step.fixedMode === 'finish') {
+                            finish = new Date(fixedDate);
+                            activeFinish = new Date(finish.getTime() - step.proc * 60000);
+                            start = new Date(activeFinish.getTime() - step.active * 60000);
+                        } else { 
+                            start = new Date(fixedDate);
+                            activeFinish = new Date(start.getTime() + step.active * 60000);
+                            finish = new Date(activeFinish.getTime() + step.proc * 60000);
+                        }
+
+                        step.precalculated = { start, activeFinish, finish };
+                        masterBlocked.push({ start: start, finish: activeFinish, name: step.name, id: `step_${gIndex}_${sIndex}` });
+                    }
+                });
+            });
 
             let computedGroups = [];
             let nextNeededStart = new Date(baseDeadline);
@@ -541,63 +581,141 @@
 
                 let tempTime = new Date(deadlineForThisGroup);
                 let timeline = [];
-                
+
                 group.steps.forEach(step => {
-                    let finish = new Date(tempTime);
-                    tempTime.setMinutes(tempTime.getMinutes() - (step.active + step.proc));
-                    let start = new Date(tempTime);
-                    let activeFinish = new Date(start.getTime() + (step.active * 60000));
+                    let start, activeFinish, finish;
+
+                    if (step.isFixed && step.precalculated) {
+                        start = step.precalculated.start;
+                        activeFinish = step.precalculated.activeFinish;
+                        finish = step.precalculated.finish;
+                        tempTime = new Date(start);
+                    } else {
+                        let targetActiveFinish = new Date(tempTime.getTime() - step.proc * 60000);
+
+                        let freeSlot = findFreeTimeBackward(targetActiveFinish, step.active, masterBlocked);
+
+                        start = freeSlot.start;
+                        activeFinish = freeSlot.finish;
+                        finish = new Date(activeFinish.getTime() + step.proc * 60000);
+
+                        tempTime = new Date(start);
+                    }
 
                     timeline.push({ 
-                        ...step, 
-                        start: start, 
-                        activeFinish: activeFinish,
-                        finish: finish 
+                        ...step, start: start, activeFinish: activeFinish, finish: finish 
+                    });
+                    
+                    window.calendarEvents.push({
+                        title: `${group.name}: ${step.name}`,
+                        start: start,
+                        end: finish,
+                        description: `Project: ${group.name}\nActive time: ${step.active}m\nWait/Processing time: ${step.proc}m`
                     });
                 });
-                
+
                 nextNeededStart = new Date(tempTime);
                 computedGroups.unshift({ name: group.name, timeline: timeline.reverse() });
             }
 
+            fixedBacklog.forEach(task => {
+                let isClashing = false;
+                for (let block of masterBlocked) {
+                    if (block.id === task.id) continue; 
+                    if (task.start < block.finish && task.finish > block.start) {
+                        isClashing = true; break;
+                    }
+                }
+                task.clashed = isClashing;
+            });
+
+            let clashingFixed = fixedBacklog.filter(t => t.clashed);
+            let unclashingFixed = fixedBacklog.filter(t => !t.clashed);
+
             let html = `<h2 style="color:var(--accent-green); text-align:center; margin-top:0; font-size:1.3rem;">MASTER TIMELINE</h2>`;
-            
-            if (computedGroups.length === 0) {
-                html += `<p style="text-align:center;">No projects scheduled.</p>`;
+
+            if (clashingFixed.length > 0) {
+                html += `<div style="border: 1px dashed var(--danger); padding: 15px; border-radius: 8px; background: rgba(239, 68, 68, 0.05); margin-bottom: 25px;">
+                    <h3 style="border-bottom: 2px solid var(--danger); color:var(--danger); margin-top:0;">[ ⚠️ Rigid Scheduling Conflicts ]</h3>
+                    <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">Multiple rigid tasks overlap with each other.</p>`;
+                
+                clashingFixed.sort((a,b) => a.start - b.start).forEach(task => {
+                    const sFmt = task.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    const fFmt = task.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    html += `<div style="margin-bottom:10px; border-left:3px solid var(--danger); padding-left:15px; padding-top: 5px; padding-bottom: 5px;">
+                        <span class="time-mark" style="color:var(--danger)">${sFmt}</span>: 
+                        <strong style="color:white; font-size:1.05em;">${task.name}</strong> 
+                        <span style="color:var(--text-muted); font-size:0.9em;">(${task.time}m total)</span>
+                        <div style="color:#64748b; font-size: 0.85em; margin-top:2px;">Ends at ${fFmt}</div>
+                    </div>`;
+                });
+                html += `</div>`;
             }
 
+            let masterTimeline = [];
+            
             computedGroups.forEach(group => {
-                html += `<h3 style="border-bottom: 2px solid var(--accent-blue); color:var(--accent-blue); margin-top:30px;">[ ${group.name} ]</h3>`;
-                
-                if(group.timeline.length === 0) {
-                     html += `<div style="color:var(--text-muted); margin-left:15px;">No steps defined.</div>`;
-                }
+                group.timeline.forEach(step => {
+                    masterTimeline.push({ type: 'step', start: step.start, groupName: group.name, data: step });
+                });
+            });
 
-                group.timeline.forEach(item => {
-                    const startFmt = item.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    const activeFmt = item.activeFinish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    const finishFmt = item.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            unclashingFixed.forEach(task => {
+                masterTimeline.push({ type: 'fixed', start: task.start, data: task });
+            });
+
+            masterTimeline.sort((a,b) => a.start - b.start);
+
+            if (masterTimeline.length === 0 && clashingFixed.length === 0) {
+                html += `<p style="text-align:center;">No tasks scheduled.</p>`;
+            }
+
+            let currentGroupName = "";
+
+            masterTimeline.forEach(item => {
+                if (item.type === 'step') {
+                    let step = item.data;
+                    
+                    if (item.groupName !== currentGroupName) {
+                        html += `<h3 style="border-bottom: 2px solid var(--accent-blue); color:var(--accent-blue); margin-top:30px;">[ ${item.groupName} ]</h3>`;
+                        currentGroupName = item.groupName;
+                    }
+                    
+                    const startFmt = step.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    const activeFmt = step.activeFinish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    const finishFmt = step.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
                     html += `<div style="margin-bottom:20px; border-left:3px solid #334155; padding-left:15px;">
                         <div style="margin-bottom: 8px;">
                             <span class="time-mark">${startFmt}</span>: 
-                            <strong style="color:white; font-size:1.05em;">${item.name}</strong> 
-                            <span style="color:var(--text-muted); font-size:0.9em; display:inline-block;">(${item.active}m active)</span>
+                            <strong style="color:white; font-size:1.05em;">${step.name}</strong> 
+                            <span style="color:var(--text-muted); font-size:0.9em; display:inline-block;">(${step.active}m active)</span>
                         </div>`;
 
-                    if (item.proc > 0) {
+                    if (step.proc > 0) {
                         html += `<div style="margin-bottom: 5px;">
                             <span class="time-mark" style="color:var(--text-muted);">${activeFmt}</span>: 
-                            <span class="phase-mark">Processing Phase Begins (${item.proc}m gap)</span>
+                            <span class="phase-mark">Processing Phase Begins (${step.proc}m gap)</span>
                         </div>`;
 
-                        let gapRemaining = item.proc;
+                        let gapRemaining = step.proc;
+                        let currentGapTime = new Date(step.activeFinish); 
+                        
                         routines.forEach(routine => {
                             if (!routine.used && routine.totalTime <= gapRemaining && routine.totalTime > 0) {
                                 routine.tasks.forEach(t => {
                                     html += `<div class="routine-slot">
                                         <strong>${t.name}</strong> <span>(${t.time}m)</span>
                                     </div>`;
+                                    
+                                    let taskEnd = new Date(currentGapTime.getTime() + (t.time * 60000));
+                                    window.calendarEvents.push({
+                                        title: `[Routine] ${t.name}`,
+                                        start: new Date(currentGapTime),
+                                        end: taskEnd,
+                                        description: `Auto-filled during wait phase of: ${step.name}`
+                                    });
+                                    currentGapTime = taskEnd;
                                 });
                                 gapRemaining -= routine.totalTime;
                                 routine.used = true;
@@ -609,7 +727,19 @@
                         <span class="phase-mark">Step Concludes</span>
                     </div>
                     </div>`;
-                });
+
+                } else if (item.type === 'fixed') {
+                    let task = item.data;
+                    const sFmt = task.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    const fFmt = task.finish.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    
+                    html += `<div style="margin-bottom:20px; border-left:3px solid var(--accent-purple); padding-left:15px; background: rgba(168, 85, 247, 0.05); padding-top: 8px; padding-bottom: 8px; border-radius: 0 6px 6px 0;">
+                        <span class="time-mark" style="color:var(--accent-purple)">${sFmt}</span>: 
+                        <strong style="color:white; font-size:1.05em;">${task.name}</strong> 
+                        <span style="color:var(--accent-purple); font-size:0.75em; margin-left: 5px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">[Rigid Task]</span>
+                        <div style="color:#64748b; font-size: 0.85em; margin-top:2px;">Ends at ${fFmt}</div>
+                    </div>`;
+                }
             });
 
             const unusedRoutines = routines.filter(r => !r.used && r.totalTime > 0);
@@ -624,10 +754,18 @@
                 html += `</ul></div>`;
             }
 
+            if (window.calendarEvents.length > 0) {
+                 html += `<div style="margin-top: 40px; text-align: center; border-top: 1px solid var(--border); padding-top: 25px;">
+                    <button class="scheduler-btn" onclick="downloadICS()" style="background:var(--accent-purple); color:white; border-color:var(--accent-purple); width:100%; max-width:350px;">
+                        📥 DOWNLOAD AS .ICS CALENDAR
+                    </button>
+                    <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 10px;">Imports directly into Apple Calendar, Google Calendar, or Outlook.</p>
+                 </div>`;
+            }
+
             document.getElementById('output').innerHTML = html;
         }
 
-        // Initialize with default state
         addGroup();
         addSubTask(document.querySelector('.group-container').id || Date.now());
         addBacklog();
