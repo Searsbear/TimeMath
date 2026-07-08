@@ -300,13 +300,64 @@
             }
         }
 
+        /* --- LIGHT MODE OVERRIDES --- */
+        body.light-theme {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #cbd5e1;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --input-bg: #ffffff;
+        }
+
+        body.light-theme .library-panel,
+        body.light-theme .output,
+        body.light-theme .info-tip .tip-box { background: #ffffff; }
+        
+        body.light-theme .group-container, 
+        body.light-theme .backlog-item, 
+        body.light-theme .execution-bar { background: #f1f5f9; }
+        
+        body.light-theme .sub-task, 
+        body.light-theme .link-wrapper, 
+        body.light-theme .lib-item { 
+            background: #ffffff; 
+            border: 1px solid var(--border); 
+        }
+        
+        body.light-theme input, 
+        body.light-theme select { 
+            border-color: #cbd5e1; 
+            color: var(--text); 
+        }
+        
+        body.light-theme .btn-move,
+        body.light-theme .info-tip { 
+            background: #e2e8f0; 
+            color: var(--text-muted); 
+        }
+
+        body.light-theme .info-tip:hover {
+            background: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        /* Fix the tooltip arrow color in light mode */
+        body.light-theme .info-tip .tip-box::after {
+            border-color: var(--border) transparent transparent transparent;
+        }
+
+
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h2 class="header-title">Time Management Planner</h2>
-
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="width: 100px;"></div> <h2 class="header-title" style="margin-bottom: 0;">Time Management Planner</h2>
+            <button id="themeToggle" class="scheduler-btn" style="min-height: 38px; padding: 6px 12px; font-size: 0.85em; border-color: var(--border); color: var(--text-muted); width: 100px;">
+                ☀️ Light
+            </button>
+        </div>
         <div class="top-controls">
             <button class="scheduler-btn" onclick="exportData()" style="flex:1; border-color: #64748b; color: #cbd5e1;">💾 Save Routine</button>
             <input type="file" id="fileImport" style="display:none" accept=".json" onchange="importData(event)">
@@ -367,6 +418,29 @@
     </div>
 
     <script>
+        // --- THEME TOGGLE LOGIC ---
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('planner_theme');
+
+        // Check local storage on load
+        if (currentTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeToggleBtn.innerText = '🌙 Dark';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            
+            if (document.body.classList.contains('light-theme')) {
+                themeToggleBtn.innerText = '🌙 Dark';
+                localStorage.setItem('planner_theme', 'light');
+            } else {
+                themeToggleBtn.innerText = '☀️ Light';
+                localStorage.setItem('planner_theme', 'dark');
+            }
+        });
+
+
         window.calendarEvents = [];
         window.libraryData = { groups: [], backlog: [] };
 
